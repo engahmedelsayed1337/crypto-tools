@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CryptoTool</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg-base:    #0c0c0c;
+      --bg-surface: #111111;
+      --bg-card:    #161616;
+      --bg-input:   #1a1a1a;
+      --border:     #222222;
+      --border-md:  #2a2a2a;
+      --text-pri:   #e8e8e8;
+      --text-sec:   #777;
+      --text-muted: #444;
+      --sym:   #4ade80;
+      --asym:  #818cf8;
+      --enc:   #f87171;
+      --hash:  #facc15;
+    }
+ 
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+    body {
+      background: var(--bg-base);
+      color: var(--text-pri);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+    }
+ 
+    /* ── NAVBAR ── */
+    .navbar {
+      background: var(--bg-surface) !important;
+      border-bottom: 1px solid var(--border);
+      height: 58px;
+      padding: 0 2rem;
+    }
+ 
+    .navbar-brand {
+      color: var(--text-pri) !important;
+      font-weight: 600;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+ 
+    .brand-icon {
+      width: 28px; height: 28px;
+      background: #1c1c1c;
+      border: 1px solid var(--border-md);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .brand-icon i { font-size: 13px; color: #666; }
+ 
+    .nav-link {
+      color: var(--text-sec) !important;
+      font-size: 0.85rem;
+      height: 58px;
+      display: flex; align-items: center; gap: 6px;
+      padding: 0 14px !important;
+      transition: color 0.15s;
+    }
+    .nav-link:hover, .nav-link.show { color: var(--text-pri) !important; }
+    .nav-link i { font-size: 14px; }
+ 
+    .dropdown-menu {
+      background: #141414;
+      border: 1px solid var(--border-md);
+      border-radius: 10px;
+      padding: 8px;
+      min-width: 250px;
+      margin-top: 4px !important;
+    }
+ 
+    .dropdown-label {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 6px 10px 4px;
+    }
+ 
+    .dropdown-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 9px 10px;
+      border-radius: 7px;
+      color: #ccc;
+      font-size: 0.85rem;
+      transition: background 0.12s;
+    }
+    .dropdown-item:hover { background: #1e1e1e; color: #fff; }
+ 
+    .d-icon {
+      width: 32px; height: 32px;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+    }
+    .d-icon-sym  { background: #162216; color: var(--sym); }
+    .d-icon-asym { background: #161622; color: var(--asym); }
+    .d-icon-enc  { background: #221616; color: var(--enc); }
+    .d-icon-hash { background: #222216; color: var(--hash); }
+ 
+    .d-item-text { display: flex; flex-direction: column; gap: 1px; }
+    .d-item-title { font-size: 13px; font-weight: 600; color: #ddd; }
+    .d-item-desc  { font-size: 11px; color: #555; }
+    .dropdown-divider { border-color: #222; margin: 5px 6px; }
+ 
+    /* ── HERO ── */
+    .hero {
+      padding: 72px 0 48px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #161616;
+      border: 1px solid var(--border-md);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 11px;
+      color: var(--text-sec);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      color: var(--text-pri);
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 14px;
+    }
+    .hero h1 span { color: #3a3a3a; }
+    .hero p {
+      font-size: 0.95rem;
+      color: var(--text-sec);
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+ 
+    /* ── TOOL TABS ── */
+    .tool-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      overflow-x: auto;
+    }
+    .tool-tab {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 20px;
+      height: 52px;
+      font-size: 0.85rem;
+      color: var(--text-sec);
+      border: none;
+      background: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s;
+      font-family: 'Syne', sans-serif;
+    }
+    .tool-tab:hover { color: var(--text-pri); }
+    .tool-tab.active { color: var(--text-pri); border-bottom-color: #fff; }
+    .tool-tab i { font-size: 15px; }
+    .tab-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+ 
+    /* ── TOOL PANELS ── */
+    .tool-panel { display: none; padding: 40px 0 60px; }
+    .tool-panel.active { display: block; }
+ 
+    /* ── SECTION HEADER ── */
+    .section-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 32px;
+    }
+    .section-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .section-title { font-size: 1.3rem; font-weight: 700; }
+    .section-sub   { font-size: 0.82rem; color: var(--text-sec); margin-top: 2px; }
+ 
+    /* ── CARD ── */
+    .crypto-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      height: 100%;
+    }
+    .card-label {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+ 
+    /* ── FORM ELEMENTS ── */
+    .form-control, .form-select {
+      background: var(--bg-input) !important;
+      border: 1px solid var(--border-md) !important;
+      color: var(--text-pri) !important;
+      border-radius: 8px !important;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+    }
+    .form-control:focus, .form-select:focus {
+      box-shadow: none !important;
+      border-color: #3a3a3a !important;
+    }
+    .form-control::placeholder { color: var(--text-muted) !important; }
+    textarea.form-control { resize: vertical; min-height: 100px; }
+ 
+    .form-select option { background: #1a1a1a; }
+ 
+    /* ── BUTTONS ── */
+    .btn-tool {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 9px 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border-md);
+      background: #1e1e1e;
+      color: var(--text-pri);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-tool:hover { background: #252525; border-color: #333; }
+ 
+    .btn-sym  { border-color: #1e3a1e; color: var(--sym); }
+    .btn-sym:hover  { background: #162216; border-color: #2a4a2a; }
+    .btn-asym { border-color: #1e1e3a; color: var(--asym); }
+    .btn-asym:hover { background: #161622; border-color: #2a2a4a; }
+    .btn-enc  { border-color: #3a1e1e; color: var(--enc); }
+    .btn-enc:hover  { background: #221616; border-color: #4a2a2a; }
+    .btn-hash { border-color: #3a3a1e; color: var(--hash); }
+    .btn-hash:hover { background: #222216; border-color: #4a4a2a; }
+ 
+    /* ── ALGO BADGES ── */
+    .algo-badge {
+      display: inline-flex; align-items: center;
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      border: 1px solid;
+      margin: 3px 3px 3px 0;
+    }
+    .badge-sym  { background: #0e200e; border-color: #1e3a1e; color: var(--sym); }
+    .badge-asym { background: #0e0e20; border-color: #1e1e3a; color: var(--asym); }
+    .badge-enc  { background: #200e0e; border-color: #3a1e1e; color: var(--enc); }
+    .badge-hash { background: #20200e; border-color: #3a3a1e; color: var(--hash); }
+ 
+    /* ── OUTPUT BOX ── */
+    .output-box {
+      background: #0e0e0e;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: #666;
+      min-height: 52px;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+    .output-box.has-output { color: #aaa; }
+ 
+    /* ── KEY DISPLAY ── */
+    .key-box {
+      background: #0e0e0e;
+      border: 1px dashed #222;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: #555;
+      word-break: break-all;
+      line-height: 1.7;
+    }
+ 
+    /* ── TOGGLE SWITCH ── */
+    .form-check-input {
+      background-color: #222 !important;
+      border-color: #333 !important;
+    }
+    .form-check-input:checked {
+      background-color: #3a3a3a !important;
+      border-color: #555 !important;
+    }
+ 
+    /* ── ERROR / SUCCESS ── */
+    .alert-box {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 8px;
+      display: none;
+    }
+    .alert-box.error   { background: #1a0a0a; border: 1px solid #4a1a1a; color: #f87171; }
+    .alert-box.success { background: #0a1a0a; border: 1px solid #1a4a1a; color: #4ade80; }
+ 
+    /* animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .tool-panel.active { animation: fadeIn 0.22s ease; }
+ 
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+  </style>
+</head>
+<body>
+ 
+<!-- ════════════════ HERO ════════════════ -->
+<div class="hero">
+  <div class="container">
+    <div class="hero-badge"><i class="bi bi-shield-check"></i> Cryptography Toolkit</div>
+    <h1>One place for all<br/><span>crypto operations</span></h1>
+    <p>Symmetric & asymmetric encryption, encoding, decoding, and hashing — all in one clean interface.</p>
+  </div>
+</div>
+ 
+<!-- ════════════════ TOOL TABS ════════════════ -->
+<div class="tool-tabs">
+  <button class="tool-tab active" id="tab-sym" onclick="switchTab('sym')">
+    <span class="tab-dot" style="background:var(--sym)"></span>
+    <i class="bi bi-layers"></i> Symmetric
+  </button>
+  <button class="tool-tab" id="tab-asym" onclick="switchTab('asym')">
+    <span class="tab-dot" style="background:var(--asym)"></span>
+    <i class="bi bi-key"></i> Asymmetric
+  </button>
+  <button class="tool-tab" id="tab-enc" onclick="switchTab('enc')">
+    <span class="tab-dot" style="background:var(--enc)"></span>
+    <i class="bi bi-arrow-left-right"></i> Encode / Decode
+  </button>
+  <button class="tool-tab" id="tab-hash" onclick="switchTab('hash')">
+    <span class="tab-dot" style="background:var(--hash)"></span>
+    <i class="bi bi-hash"></i> Hashing
+  </button>
+</div>
+ 
+<!-- ════════════════ PANELS ════════════════ -->
+<div class="container">
+ 
+  <!-- ── SYMMETRIC ── -->
+  <div class="tool-panel active" id="panel-sym">
+    <div class="section-header">
+      <div class="section-icon" style="background:#162216; color:var(--sym)">
+        <i class="bi bi-layers"></i>
+      </div>
+      <div>
+        <div class="section-title">Symmetric Encryption</div>
+        <div class="section-sub">Same key for encryption and decryption</div>
+      </div>
+    </div>
+ 
+    <div class="mb-3">
+      <span class="algo-badge badge-sym">AES-256</span>
+      <span class="algo-badge badge-sym">AES-128</span>
+      <span class="algo-badge badge-sym">DES</span>
+      <span class="algo-badge badge-sym">3DES</span>
+    </div>
+ 
+    <div class="row g-4">
+      <!-- Config -->
+      <div class="col-lg-4">
+        <div class="crypto-card">
+          <div class="card-label">Configuration</div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Algorithm</label>
+            <!-- FIX: added id="sym-algo" and correct values -->
+            <select id="sym-algo" class="form-select form-select-sm">
+              <option value="AES-256">AES-256</option>
+              <option value="AES-128">AES-128</option>
+              <option value="DES">DES</option>
+              <option value="3DES">3DES</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Mode</label>
+            <select class="form-select form-select-sm">
+              <option>CBC</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Secret Key (hex)</label>
+            <!-- FIX: added id="sym-key" -->
+            <input type="text" id="sym-key" class="form-control form-control-sm" placeholder="Enter or generate key…"/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">IV / Nonce (hex)</label>
+            <!-- FIX: added id="sym-iv" -->
+            <input type="text" id="sym-iv" class="form-control form-control-sm" placeholder="Initialization vector…"/>
+          </div>
+          <button onclick="generateKey()" class="btn-tool btn-sym w-100 justify-content-center">
+            <i class="bi bi-arrow-repeat"></i> Generate Key + IV
+          </button>
+          <div id="sym-key-error" class="alert-box error"></div>
+        </div>
+      </div>
+ 
+      <!-- Encrypt -->
+      <div class="col-lg-4">
+        <div class="crypto-card">
+          <div class="card-label">Encrypt</div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Plaintext</label>
+            <!-- FIX: added id="sym-plaintext" -->
+            <textarea id="sym-plaintext" class="form-control form-control-sm" placeholder="Type your message here…"></textarea>
+          </div>
+          <button onclick="encryptSym()" class="btn-tool btn-sym w-100 justify-content-center mb-3">
+            <i class="bi bi-lock"></i> Encrypt
+          </button>
+          <div class="card-label">Ciphertext Output</div>
+          <!-- FIX: added id="sym-ciphertext-output", using div with textContent -->
+          <div id="sym-ciphertext-output" class="output-box">— output will appear here —</div>
+          <div id="sym-enc-error" class="alert-box error"></div>
+        </div>
+      </div>
+ 
+      <!-- Decrypt -->
+      <div class="col-lg-4">
+        <div class="crypto-card">
+          <div class="card-label">Decrypt</div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Ciphertext (Base64)</label>
+            <!-- FIX: added id="sym-ciphertext-input" -->
+            <textarea id="sym-ciphertext-input" class="form-control form-control-sm" placeholder="Paste ciphertext here…"></textarea>
+          </div>
+          <button onclick="decryptSym()" class="btn-tool btn-sym w-100 justify-content-center mb-3">
+            <i class="bi bi-unlock"></i> Decrypt
+          </button>
+          <div class="card-label">Plaintext Output</div>
+          <!-- FIX: added id="sym-plaintext-output", using div with textContent -->
+          <div id="sym-plaintext-output" class="output-box">— output will appear here —</div>
+          <div id="sym-dec-error" class="alert-box error"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- ── ASYMMETRIC ── -->
+  <div class="tool-panel" id="panel-asym">
+    <div class="section-header">
+      <div class="section-icon" style="background:#161622; color:var(--asym)">
+        <i class="bi bi-key"></i>
+      </div>
+      <div>
+        <div class="section-title">Asymmetric Encryption</div>
+        <div class="section-sub">Public key encrypts, private key decrypts</div>
+      </div>
+    </div>
+ 
+    <div class="mb-3">
+      <span class="algo-badge badge-asym">RSA</span>
+    </div>
+ 
+    <div class="row g-4">
+      <!-- Config -->
+      <div class="col-lg-4">
+        <div class="crypto-card">
+          <div class="card-label">Key Configuration</div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Algorithm</label>
+            <select class="form-select form-select-sm">
+              <option>RSA</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Padding</label>
+            <select class="form-select form-select-sm">
+              <option>OAEP (SHA-256)</option>
+              <option>PKCS#1 v1.5</option>
+              <option>None</option>
+            </select>
+          </div>
+          <button class="btn-tool btn-asym w-100 justify-content-center mb-3">
+            <i class="bi bi-arrow-repeat"></i> Generate Key Pair
+          </button>
+          <div class="card-label mb-2">Public Key</div>
+          <div class="key-box mb-3">— public key —</div>
+          <div class="card-label mb-2">Private Key</div>
+          <div class="key-box">— private key —</div>
+        </div>
+      </div>
+ 
+      <!-- Encrypt -->
+      <div class="col-lg-4">
+        <div class="crypto-card">
+          <div class="card-label">Encrypt with Public Key</div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Public Key (PEM)</label>
+            <textarea class="form-control form-control-sm" placeholder="-----BEGIN PUBLIC KEY-----&#10;…&#10;-----END PUBLIC KEY-----" style="min-height:80px"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Message</label>
+            <textarea class="form-control form-control-sm" placeholder="Plaintext message…"></textarea>
+          </div>
+          <button class="btn-tool btn-asym w-100 justify-content-center mb-3">
+            <i class="bi bi-lock"></i> Encrypt
+          </button>
+          <div class="card-label">Output</div>
+          <div class="output-box">— ciphertext —</div>
+        </div>
+      </div>
+ 
+      <!-- Decrypt -->
+      <div class="col-lg-4">
+        <div class="crypto-card">
+          <div class="card-label">Decrypt with Private Key</div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Private Key (PEM)</label>
+            <textarea class="form-control form-control-sm" placeholder="-----BEGIN PRIVATE KEY-----&#10;…&#10;-----END PRIVATE KEY-----" style="min-height:80px"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Ciphertext</label>
+            <textarea class="form-control form-control-sm" placeholder="Paste encrypted data…"></textarea>
+          </div>
+          <button class="btn-tool btn-asym w-100 justify-content-center mb-3">
+            <i class="bi bi-unlock"></i> Decrypt
+          </button>
+          <div class="card-label">Output</div>
+          <div class="output-box">— plaintext —</div>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- ── ENCODE / DECODE ── -->
+  <div class="tool-panel" id="panel-enc">
+    <div class="section-header">
+      <div class="section-icon" style="background:#221616; color:var(--enc)">
+        <i class="bi bi-arrow-left-right"></i>
+      </div>
+      <div>
+        <div class="section-title">Encode / Decode</div>
+        <div class="section-sub">Convert data between encoding formats</div>
+      </div>
+    </div>
+ 
+    <div class="mb-3">
+      <span class="algo-badge badge-enc">Base64</span>
+      <span class="algo-badge badge-enc">Hex</span>
+      <span class="algo-badge badge-enc">URL</span>
+    </div>
+ 
+    <div class="row g-4">
+      <!-- Config -->
+      <div class="col-lg-3">
+        <div class="crypto-card">
+          <div class="card-label">Format</div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Encoding Type</label>
+            <select class="form-select form-select-sm">
+              <option>Base64</option>
+              <option>Hex</option>
+              <option>URL Encoding</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Input Type</label>
+            <select class="form-select form-select-sm">
+              <option>Text (UTF-8)</option>
+              <option>Hex string</option>
+              <option>Binary string</option>
+            </select>
+          </div>
+          <div class="form-check mb-0 mt-2">
+            <input class="form-check-input" type="checkbox" id="urlSafe"/>
+            <label class="form-check-label text-secondary" for="urlSafe" style="font-size:12px">URL-safe output</label>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- Encode -->
+      <div class="col-lg-4">
+        <div class="crypto-card">
+          <div class="card-label">Encode</div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Input</label>
+            <textarea class="form-control form-control-sm" placeholder="Raw text or data to encode…"></textarea>
+          </div>
+          <button class="btn-tool btn-enc w-100 justify-content-center mb-3">
+            <i class="bi bi-box-arrow-in-right"></i> Encode
+          </button>
+          <div class="card-label">Encoded Output</div>
+          <div class="output-box">— encoded value —</div>
+        </div>
+      </div>
+ 
+      <!-- Decode -->
+      <div class="col-lg-4">
+        <div class="crypto-card">
+          <div class="card-label">Decode</div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Input</label>
+            <textarea class="form-control form-control-sm" placeholder="Encoded string to decode…"></textarea>
+          </div>
+          <button class="btn-tool btn-enc w-100 justify-content-center mb-3">
+            <i class="bi bi-box-arrow-left"></i> Decode
+          </button>
+          <div class="card-label">Decoded Output</div>
+          <div class="output-box">— decoded value —</div>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- ── HASHING ── -->
+  <div class="tool-panel" id="panel-hash">
+    <div class="section-header">
+      <div class="section-icon" style="background:#222216; color:var(--hash)">
+        <i class="bi bi-hash"></i>
+      </div>
+      <div>
+        <div class="section-title">Hashing</div>
+        <div class="section-sub">One-way cryptographic digest functions</div>
+      </div>
+    </div>
+ 
+    <div class="mb-3">
+      <span class="algo-badge badge-hash">SHA-256</span>
+      <span class="algo-badge badge-hash">SHA-512</span>
+      <span class="algo-badge badge-hash">Salted-Hashing</span>
+    </div>
+ 
+    <div class="row g-4">
+      <!-- Config -->
+      <div class="col-lg-3">
+        <div class="crypto-card">
+          <div class="card-label">Options</div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Algorithm</label>
+            <select class="form-select form-select-sm">
+              <option>SHA-256</option>
+              <option>SHA-512</option>
+              <option>Salted-Hashing</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Output Format</label>
+            <select class="form-select form-select-sm">
+              <option>Hex (lowercase)</option>
+              <option>Hex (uppercase)</option>
+              <option>Base64</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Salt (optional)</label>
+            <input type="text" class="form-control form-control-sm" placeholder="Salt value…"/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">HMAC Key (optional)</label>
+            <input type="text" class="form-control form-control-sm" placeholder="Secret key…"/>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- Hash -->
+      <div class="col-lg-5">
+        <div class="crypto-card">
+          <div class="card-label">Input</div>
+          <div class="mb-3">
+            <textarea class="form-control form-control-sm" placeholder="Enter text to hash…" style="min-height:120px"></textarea>
+          </div>
+          <button class="btn-tool btn-hash w-100 justify-content-center mb-4">
+            <i class="bi bi-hash"></i> Generate Hash
+          </button>
+          <div class="card-label mb-2">Hash Output</div>
+          <div class="output-box mb-3">— hash digest —</div>
+          <div class="card-label mb-2">Hash Length</div>
+          <div class="output-box" style="min-height:auto; padding: 8px 16px;">— bits —</div>
+        </div>
+      </div>
+ 
+      <!-- Verify -->
+      <div class="col-lg-4">
+        <div class="crypto-card">
+          <div class="card-label">Verify Hash</div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Original Text</label>
+            <textarea class="form-control form-control-sm" placeholder="Original message…"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-secondary" style="font-size:12px">Known Hash</label>
+            <input type="text" class="form-control form-control-sm" placeholder="Expected hash value…"/>
+          </div>
+          <button class="btn-tool btn-hash w-100 justify-content-center mb-3">
+            <i class="bi bi-check2-circle"></i> Verify
+          </button>
+          <div class="output-box" style="text-align:center; padding:14px;">
+            <i class="bi bi-dash-circle text-secondary"></i>
+            <span class="ms-2" style="color:#555; font-family:'Syne',sans-serif; font-size:13px">Not verified yet</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+</div><!-- /container -->
+ 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+ 
+<script>
+/* ── TAB SWITCHING ── */
+function switchTab(id) {
+  document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  document.getElementById('panel-' + id).classList.add('active');
+  document.getElementById('panel-' + id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+ 
+/* ── HELPERS ── */
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'alert-box error';
+  el.style.display = 'block';
+}
+function hideError(id) {
+  const el = document.getElementById(id);
+  el.style.display = 'none';
+}
+function setOutput(id, text) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.classList.add('has-output');
+}
+ 
+/* ── GENERATE KEY + IV ── */
+async function generateKey() {
+  hideError('sym-key-error');
+  // FIX: read algorithm from the select dropdown
+  const algo = document.getElementById('sym-algo').value;
+  try {
+    const res = await fetch('/api/symmetric/generate-key', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ algorithm: algo })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      return showError('sym-key-error', err.error || 'Server error');
+    }
+    const data = await res.json();
+    // FIX: use correct IDs sym-key and sym-iv
+    document.getElementById('sym-key').value = data.key;
+    document.getElementById('sym-iv').value  = data.iv;
+  } catch (e) {
+    showError('sym-key-error', 'Network error: ' + e.message);
+  }
+}
+ 
+/* ── ENCRYPT ── */
+async function encryptSym() {
+  hideError('sym-enc-error');
+  // FIX: read algorithm from dropdown
+  const algo      = document.getElementById('sym-algo').value;
+  // FIX: read key and iv from correct IDs
+  const key       = document.getElementById('sym-key').value.trim();
+  const iv        = document.getElementById('sym-iv').value.trim();
+  // FIX: read plaintext from correct ID
+  const plaintext = document.getElementById('sym-plaintext').value;
+ 
+  if (!key || !iv) return showError('sym-enc-error', 'Please generate or enter a Key and IV first.');
+  if (!plaintext)  return showError('sym-enc-error', 'Plaintext is empty.');
+ 
+  try {
+    const res = await fetch('/api/symmetric/encrypt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ algorithm: algo, key, iv, plaintext })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      return showError('sym-enc-error', err.error || 'Encryption failed');
+    }
+    const data = await res.json();
+    // FIX: use textContent on div (not .value) with correct ID
+    setOutput('sym-ciphertext-output', data.result);
+  } catch (e) {
+    showError('sym-enc-error', 'Network error: ' + e.message);
+  }
+}
+ 
+/* ── DECRYPT ── */
+async function decryptSym() {
+  hideError('sym-dec-error');
+  // FIX: read algorithm from dropdown
+  const algo       = document.getElementById('sym-algo').value;
+  // FIX: read key and iv from correct IDs
+  const key        = document.getElementById('sym-key').value.trim();
+  const iv         = document.getElementById('sym-iv').value.trim();
+  // FIX: read ciphertext from correct ID (the input textarea, not the output div)
+  const ciphertext = document.getElementById('sym-ciphertext-input').value.trim();
+ 
+  if (!key || !iv)   return showError('sym-dec-error', 'Please enter the Key and IV used during encryption.');
+  if (!ciphertext)   return showError('sym-dec-error', 'Ciphertext is empty.');
+ 
+  try {
+    const res = await fetch('/api/symmetric/decrypt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ algorithm: algo, key, iv, ciphertext })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      return showError('sym-dec-error', err.error || 'Decryption failed');
+    }
+    const data = await res.json();
+    // FIX: use textContent on div (not .value) with correct ID
+    setOutput('sym-plaintext-output', data.result);
+  } catch (e) {
+    showError('sym-dec-error', 'Network error: ' + e.message);
+  }
+}
+</script>
+</body>
+</html>
+ 
