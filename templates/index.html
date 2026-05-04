@@ -503,8 +503,8 @@
               <option>None</option>
             </select>
           </div>
-          <button class="btn-tool btn-asym w-100 justify-content-center mb-3">
-            <i class="bi bi-arrow-repeat"></i> Generate Key Pair
+          <button onclick="generateRSAKeys()" class="btn-tool btn-asym w-100 justify-content-center mb-3">
+             <i class="bi bi-arrow-repeat"></i> Generate Key Pair
           </button>
           <div class="card-label mb-2">Public Key</div>
           <div class="key-box mb-3">— public key —</div>
@@ -519,17 +519,22 @@
           <div class="card-label">Encrypt with Public Key</div>
           <div class="mb-3">
             <label class="form-label text-secondary" style="font-size:12px">Public Key (PEM)</label>
-            <textarea class="form-control form-control-sm" placeholder="-----BEGIN PUBLIC KEY-----&#10;…&#10;-----END PUBLIC KEY-----" style="min-height:80px"></textarea>
+             <textarea id="public-key-input"
+                  class="form-control form-control-sm"
+                 placeholder="-----BEGIN PUBLIC KEY-----&#10;…&#10;-----END PUBLIC KEY-----"
+                 style="min-height:80px"></textarea>
           </div>
           <div class="mb-3">
             <label class="form-label text-secondary" style="font-size:12px">Message</label>
-            <textarea class="form-control form-control-sm" placeholder="Plaintext message…"></textarea>
+               <textarea id="rsa-message"
+                    class="form-control form-control-sm"
+                    placeholder="Plaintext message…"></textarea>
           </div>
-          <button class="btn-tool btn-asym w-100 justify-content-center mb-3">
-            <i class="bi bi-lock"></i> Encrypt
+          <button onclick="encryptRSA()" class="btn-tool btn-asym w-100 justify-content-center mb-3">
+          <i class="bi bi-lock"></i> Encrypt
           </button>
           <div class="card-label">Output</div>
-          <div class="output-box">— ciphertext —</div>
+          <div id="rsa-encrypt-output" class="output-box">— ciphertext —</div>
         </div>
       </div>
  
@@ -539,17 +544,22 @@
           <div class="card-label">Decrypt with Private Key</div>
           <div class="mb-3">
             <label class="form-label text-secondary" style="font-size:12px">Private Key (PEM)</label>
-            <textarea class="form-control form-control-sm" placeholder="-----BEGIN PRIVATE KEY-----&#10;…&#10;-----END PRIVATE KEY-----" style="min-height:80px"></textarea>
+              <textarea id="private-key-input"
+                  class="form-control form-control-sm"
+                   placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
+                   style="min-height:80px"></textarea>
           </div>
           <div class="mb-3">
             <label class="form-label text-secondary" style="font-size:12px">Ciphertext</label>
-            <textarea class="form-control form-control-sm" placeholder="Paste encrypted data…"></textarea>
+              <textarea id="rsa-ciphertext"
+                   class="form-control form-control-sm"
+                   placeholder="Paste encrypted data..."></textarea>
           </div>
-          <button class="btn-tool btn-asym w-100 justify-content-center mb-3">
-            <i class="bi bi-unlock"></i> Decrypt
+          <button onclick="decryptRSA()" class="btn-tool btn-asym w-100 justify-content-center mb-3">
+          <i class="bi bi-unlock"></i> Decrypt
           </button>
           <div class="card-label">Output</div>
-          <div class="output-box">— plaintext —</div>
+          <div id="rsa-decrypt-output" class="output-box">— plaintext —</div>
         </div>
       </div>
     </div>
@@ -844,7 +854,58 @@ async function decryptSym() {
     showError('sym-dec-error', 'Network error: ' + e.message);
   }
 }
+// Generate RSA Keys
+async function generateRSAKeys() {
+  const res = await fetch('/api/asymmetric/generate-keys', {
+    method: 'POST'
+  });
+
+  const data = await res.json();
+
+  document.querySelectorAll('.key-box')[0].textContent = data.public_key;
+  document.querySelectorAll('.key-box')[1].textContent = data.private_key;
+  document.querySelectorAll('#panel-asym textarea')[0].value = data.public_key;
+  document.querySelectorAll('#panel-asym textarea')[2].value = data.private_key;
+
+}
+
+
+// Encrypt
+async function encryptRSA() {
+   const publicKey = document.getElementById('public-key-input').value.trim();
+   const message   = document.getElementById('rsa-message').value;
+  const res = await fetch('/api/asymmetric/encrypt', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: message,
+      public_key: publicKey
+    })
+  });
+
+  const data = await res.json();
+     document.getElementById('rsa-encrypt-output').textContent = data.result;
+ 
+     }
+// Decrypt
+ async function decryptRSA() {
+  const privateKey = document.getElementById('private-key-input').value.trim();
+  const ciphertext = document.getElementById('rsa-ciphertext').value;
+
+  const res = await fetch('/api/asymmetric/decrypt', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ciphertext: ciphertext,
+      private_key: privateKey
+    })
+  });
+
+  const data = await res.json();
+
+  document.getElementById('rsa-decrypt-output').textContent = data.result;
+}
+
 </script>
 </body>
 </html>
- 
